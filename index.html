@@ -1499,6 +1499,13 @@ function submitRsvp(attending){
     document.getElementById('f-name').focus();
     return;
   }
+
+  var phone    = document.getElementById('f-phone').value.trim();
+  var arrival  = document.getElementById('f-arr').value;
+  var departure= document.getElementById('f-dep').value;
+  var message  = document.getElementById('f-msg').value.trim();
+
+  // Show success immediately — don't make user wait
   document.getElementById('rsvp-form').style.display='none';
   var s = document.getElementById('rsvp-success');
   s.style.display='block';
@@ -1509,6 +1516,27 @@ function submitRsvp(attending){
   document.getElementById('rs-msg').textContent = attending
     ? 'Your response has been received. We will be in touch with accommodation details and everything you need for the celebrations.'
     : 'Thank you for letting us know. You will be in our hearts and prayers on our special day.';
+
+  // Send data to Google Sheets in background
+  var SHEET_URL = 'https://script.google.com/macros/s/AKfycbyIj1DOb7ZtVaqkPRSK_dgalYfVh8mx8c-RXxlg6drEMYV_gp6syCS6JswkWJNIRcfeZQ/exec';
+
+  var data = {
+    name:      name,
+    phone:     phone,
+    arrival:   arrival,
+    departure: departure,
+    message:   message,
+    attending: attending ? 'Yes' : 'No'
+  };
+
+  fetch(SHEET_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  }).catch(function(err){
+    console.log('Sheet error:', err);
+  });
 }
 </script>
 </body>
