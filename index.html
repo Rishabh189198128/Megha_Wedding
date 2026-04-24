@@ -1088,7 +1088,7 @@ body{
         <div class="rsvp-2col">
           <div class="field-group">
             <label class="field-lbl">Full Name *</label>
-            <input class="rsvp-input" id="f-name" type="text" placeholder="e.g. Priya Sharma">
+            <input class="rsvp-input" id="f-name" type="text" placeholder="e.g. Robin Ray">
           </div>
           <div class="field-group">
             <label class="field-lbl">WhatsApp / Phone *</label>
@@ -1262,9 +1262,9 @@ function startMusic(){
     audioEl.play().catch(function(){});
     var vol = 0;
     var fi = setInterval(function(){
-      vol = Math.min(vol + 0.015, 0.1);
+      vol = Math.min(vol + 0.015, 0.05);
       audioEl.volume = vol;
-      if(vol >= 0.1) clearInterval(fi);
+      if(vol >= 0.05) clearInterval(fi);
     }, 100);
     musicPlaying = true;
     updateMusicIcon();
