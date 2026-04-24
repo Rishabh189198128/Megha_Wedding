@@ -70,7 +70,7 @@ body{
 }
 #curtain-l{
   left:0;
-  background:linear-gradient(180deg,#1a0e06 0%,#0e0802 50%,#160c04 100%);
+  background:linear-gradient(180deg,#4a1020 0%,#3a0c18 50%,#4a1020 100%);
 }
 #curtain-r{
   right:0;
@@ -1092,7 +1092,7 @@ body{
           </div>
           <div class="field-group">
             <label class="field-lbl">WhatsApp / Phone *</label>
-            <input class="rsvp-input" id="f-phone" type="tel" placeholder="+91 98765 43210">
+            <input class="rsvp-input" id="f-phone" type="tel" placeholder="10 digit mobile number" maxlength="10" pattern="[0-9]{10}" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
           </div>
         </div>
         <div class="rsvp-2col">
@@ -1499,8 +1499,13 @@ function submitRsvp(attending){
     document.getElementById('f-name').focus();
     return;
   }
-
-  var phone    = document.getElementById('f-phone').value.trim();
+  var phone = document.getElementById('f-phone').value.trim();
+  if(phone && phone.length !== 10){
+    document.getElementById('f-phone').style.borderColor='rgba(200,80,60,0.7)';
+    document.getElementById('f-phone').focus();
+    alert('Please enter a valid 10 digit phone number.');
+    return;
+  }
   var arrival  = document.getElementById('f-arr').value;
   var departure= document.getElementById('f-dep').value;
   var message  = document.getElementById('f-msg').value.trim();
