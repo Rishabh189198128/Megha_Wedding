@@ -1248,46 +1248,84 @@ function unlockScroll(){
 // ══════════════════════════
 var musicPlaying = false;
 var audioEl = null;
+var fadeInterval = null;
 
 function buildMusic(){
   if(audioEl) return;
   audioEl = new Audio('Audio BG.mp3');
   audioEl.loop = true;
   audioEl.volume = 0;
+  audioEl.preload = 'auto';
+  // iOS Safari requires these attributes
+  audioEl.setAttribute('playsinline','');
+  audioEl.setAttribute('webkit-playsinline','');
 }
 
 function startMusic(){
   buildMusic();
   if(!musicPlaying){
-    audioEl.play().catch(function(){});
-    var vol = 0;
-    var fi = setInterval(function(){
-      vol = Math.min(vol + 0.015, 0.05);
-      audioEl.volume = vol;
-      if(vol >= 0.05) clearInterval(fi);
-    }, 100);
+    var playPromise = audioEl.play();
+    if(playPromise !== undefined){
+      playPromise.then(function(){
+        fadeVolume(0, 0.35, 2000);
+      }).catch(function(){
+        // Retry on next tap (iOS policy)
+        document.addEventListener('touchstart', function retry(){
+          audioEl.play().then(function(){
+            fadeVolume(0, 0.35, 2000);
+          }).catch(function(){});
+          document.removeEventListener('touchstart', retry);
+        }, {once:true});
+      });
+    }
     musicPlaying = true;
     updateMusicIcon();
     document.getElementById('music-ripple').style.display = 'block';
   }
 }
 
+function fadeVolume(from, to, duration){
+  if(fadeInterval) clearInterval(fadeInterval);
+  audioEl.volume = from;
+  var steps = 30;
+  var stepTime = duration / steps;
+  var stepSize = (to - from) / steps;
+  var current = from;
+  fadeInterval = setInterval(function(){
+    current += stepSize;
+    if((stepSize > 0 && current >= to) || (stepSize < 0 && current <= to)){
+      audioEl.volume = Math.max(0, Math.min(1, to));
+      clearInterval(fadeInterval);
+      fadeInterval = null;
+      // If fading to 0, pause after fade completes
+      if(to === 0){
+        audioEl.pause();
+      }
+    } else {
+      audioEl.volume = Math.max(0, Math.min(1, current));
+    }
+  }, stepTime);
+}
+
 function toggleMusic(){
   buildMusic();
   if(musicPlaying){
-    var fo = setInterval(function(){
-      audioEl.volume = Math.max(audioEl.volume - 0.03, 0);
-      if(audioEl.volume <= 0){ audioEl.pause(); clearInterval(fo); }
-    }, 80);
+    // iOS Safari: pause immediately + fade out visually
+    audioEl.pause();
+    if(fadeInterval) clearInterval(fadeInterval);
+    audioEl.volume = 0;
     musicPlaying = false;
     document.getElementById('music-ripple').style.display = 'none';
   } else {
-    audioEl.play().catch(function(){});
-    audioEl.volume = 0;
-    var fi = setInterval(function(){
-      audioEl.volume = Math.min(audioEl.volume + 0.015, 0.55);
-      if(audioEl.volume >= 0.55) clearInterval(fi);
-    }, 100);
+    var playPromise = audioEl.play();
+    if(playPromise !== undefined){
+      playPromise.then(function(){
+        fadeVolume(0, 0.35, 1000);
+      }).catch(function(){});
+    } else {
+      audioEl.play();
+      fadeVolume(0, 0.35, 1000);
+    }
     musicPlaying = true;
     document.getElementById('music-ripple').style.display = 'block';
   }
