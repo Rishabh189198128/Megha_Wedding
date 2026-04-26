@@ -1208,39 +1208,54 @@ function setupScrollCap(){
     if(el) el.style.display = 'none';
   });
 
-  // Also hard-cap the body height to just invite + scratch
+  // Hard-cap scroll: only invite + scratch visible
   function capHeight(){
     if(scratchComplete) return;
     var scratchEl = document.getElementById('s-scratch');
     var inviteEl  = document.getElementById('s-invite');
     if(!scratchEl || !inviteEl) return;
     var maxH = inviteEl.offsetHeight + scratchEl.offsetHeight;
-    document.getElementById('main').style.maxHeight = maxH + 'px';
-    document.getElementById('main').style.overflow  = 'hidden';
+    var main = document.getElementById('main');
+    main.style.maxHeight = maxH + 'px';
+    main.style.overflow  = 'hidden';
+    // Also ensure body doesn't show overflow
+    document.body.style.overflow = 'hidden';
+    // Force scroll to top in case user scrolled
+    if(window.scrollY > maxH) window.scrollTo(0, 0);
   }
   capHeight();
-  window.addEventListener('resize', capHeight);
+  window.addEventListener('resize', function(){ if(!scratchComplete) capHeight(); });
 }
 
 function lockScrollUntilScratched(){ /* handled by setupScrollCap */ }
 
 function unlockScroll(){
   scratchComplete = true;
-  // Remove height cap
+  // Remove ALL scroll/height restrictions immediately
   var main = document.getElementById('main');
   main.style.maxHeight = '';
   main.style.overflow  = '';
-  // Show all hidden sections
-  ['s-functions','s-countdown','s-rsvp','s-thankyou'].forEach(function(id){
-    var el = document.getElementById(id);
-    if(el){
-      el.style.display = '';
-      // trigger reveal animations
-      el.classList.remove('visible');
-      setTimeout(function(){ el.classList.add('section-enter'); }, 50);
-    }
-  });
-  window.removeEventListener('resize', function(){});
+  main.style.height    = '';
+  document.body.style.overflow = '';
+  document.body.style.height   = '';
+  // Show all hidden sections with a small delay so DOM updates first
+  setTimeout(function(){
+    ['s-functions','s-countdown','s-rsvp','s-thankyou'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el){
+        el.style.display  = '';
+        el.style.visibility = '';
+        el.style.opacity  = '';
+      }
+    });
+    // Re-run scroll reveal for newly shown sections
+    initScrollReveal();
+    // Smooth scroll down to functions section
+    setTimeout(function(){
+      var fn = document.getElementById('s-functions');
+      if(fn) fn.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 100);
+  }, 50);
 }
 
 // ══════════════════════════
