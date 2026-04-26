@@ -1300,8 +1300,8 @@ function toggleMusic(){
     audioEl.play().catch(function(){});
     audioEl.volume = 0;
     var fi = setInterval(function(){
-      audioEl.volume = Math.min(audioEl.volume + 0.015, 0.55);
-      if(audioEl.volume >= 0.55) clearInterval(fi);
+      audioEl.volume = Math.min(audioEl.volume + 0.015, 0.1);
+      if(audioEl.volume >= 0.1) clearInterval(fi);
     }, 100);
     musicPlaying = true;
     document.getElementById('music-ripple').style.display = 'block';
